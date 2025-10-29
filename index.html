@@ -3,35 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎨 Jogo de Pintar Online - Divirta-se Criando!</title>
+  <title>🎨 Jogo de Pintar Online - Desenhe e Compartilhe!</title>
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9757007732894966"
      crossorigin="anonymous"></script>
 
-  <!-- SEO e compartilhamento -->
-  <meta name="description" content="Desenhe online grátis! Escolha cores, pinceis e solte a criatividade no Jogo de Pintar Online.">
+  <meta name="description" content="Desenhe online grátis com pincel, borracha, modo escuro e paleta salva! Salve e compartilhe suas criações.">
   <meta property="og:title" content="🎨 Jogo de Pintar Online">
-  <meta property="og:description" content="Pinte online e divirta-se criando arte digital!">
+  <meta property="og:description" content="Pinte online e compartilhe suas obras digitais!">
   <meta property="og:type" content="website">
 
   <style>
+    :root {
+      --bg: #fff7e6;
+      --text: #222;
+      --canvas-bg: #fff;
+      --header-bg: linear-gradient(90deg, #ffb300, #ff8c00);
+      --tool-bg: #fff;
+      --btn-bg: #ff5733;
+      --btn-text: white;
+    }
+
+    body.dark {
+      --bg: #1c1c1c;
+      --text: #eee;
+      --canvas-bg: #2a2a2a;
+      --header-bg: linear-gradient(90deg, #333, #111);
+      --tool-bg: #2a2a2a;
+      --btn-bg: #007bff;
+      --btn-text: white;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to bottom, #fff7e6, #fff);
+      background: var(--bg);
+      color: var(--text);
       text-align: center;
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
     }
 
     header {
-      background: linear-gradient(90deg, #ffb300, #ff8c00);
+      background: var(--header-bg);
       color: white;
       padding: 25px 10px;
       font-size: 2em;
       font-weight: bold;
-      text-shadow: 1px 1px 3px #333;
       border-bottom: 4px solid #ff8800;
     }
 
@@ -39,32 +58,30 @@
       border: 2px solid #444;
       margin-top: 15px;
       cursor: crosshair;
-      background: white;
+      background: var(--canvas-bg);
       border-radius: 10px;
       box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
       max-width: 95%;
     }
 
-    footer {
-      margin-top: 25px;
-      font-size: 0.95em;
-      color: white;
-      background-color: #333;
-      padding: 15px;
-    }
-
     .tools {
-      margin: 20px;
+      background: var(--tool-bg);
+      margin: 20px auto;
+      padding: 10px;
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
       gap: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 700px;
     }
 
     .tools input[type="color"],
     .tools input[type="range"],
-    .tools button,
-    .tools select {
+    .tools select,
+    .tools button {
       padding: 10px;
       font-size: 1em;
       border-radius: 5px;
@@ -72,42 +89,66 @@
     }
 
     button {
-      background-color: #ff5733;
-      color: white;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
       border: none;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: 0.3s;
     }
 
     button:hover {
-      background-color: #e94e1b;
+      opacity: 0.8;
+    }
+
+    .palette {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .palette button {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2px solid #555;
+      cursor: pointer;
     }
 
     .ad-container {
-      margin: 30px auto;
+      margin: 25px auto;
       max-width: 728px;
     }
 
-    .save-btn {
-      background-color: #28a745;
+    footer {
+      margin-top: 25px;
+      font-size: 0.9em;
+      background-color: #333;
+      color: white;
+      padding: 15px;
     }
 
-    .save-btn:hover {
-      background-color: #218838;
-    }
-
-    .info {
-      font-size: 1.1em;
-      color: #333;
-      margin-top: 15px;
+    .mode-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9em;
+      z-index: 10;
     }
   </style>
 </head>
 
 <body>
   <header>🎨 Jogo de Pintar Online</header>
+  <button class="mode-toggle" id="toggleMode">🌙 Modo escuro</button>
 
-  <!-- Ferramentas -->
   <div class="tools">
     <input type="color" id="colorPicker" value="#ff5733" title="Escolha a cor">
     <input type="range" id="brushSize" min="1" max="30" value="5" title="Tamanho do pincel">
@@ -115,14 +156,17 @@
       <option value="round">Redondo</option>
       <option value="square">Quadrado</option>
     </select>
+    <button id="eraserBtn">🧽 Borracha</button>
     <button id="clearBtn">🧹 Limpar</button>
-    <button id="saveBtn" class="save-btn">💾 Salvar desenho</button>
+    <button id="saveBtn">💾 Salvar</button>
+    <button id="shareBtn">🔗 Compartilhar</button>
   </div>
 
-  <!-- Canvas -->
+  <div class="palette" id="colorPalette"></div>
+
   <canvas id="paintCanvas" width="600" height="400"></canvas>
 
-  <!-- AdSense bloco central -->
+  <!-- AdSense -->
   <div class="ad-container">
     <ins class="adsbygoogle"
          style="display:block"
@@ -133,13 +177,8 @@
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
-  <div class="info">
-    Toque na tela ou use o mouse para desenhar! 🎨<br>
-    Experimente mudar as cores e o tamanho do pincel.
-  </div>
-
   <footer>
-    Feito com ❤️ — © 2025 | Apoie clicando em um anúncio 😊
+    Feito com ❤️ — © 2025 | Compartilhe e apoie clicando em um anúncio 😊
   </footer>
 
   <script>
@@ -150,33 +189,37 @@
     const brushType = document.getElementById('brushType');
     const clearBtn = document.getElementById('clearBtn');
     const saveBtn = document.getElementById('saveBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const eraserBtn = document.getElementById('eraserBtn');
+    const toggleMode = document.getElementById('toggleMode');
+    const paletteContainer = document.getElementById('colorPalette');
 
     let painting = false;
     let color = colorPicker.value;
     let size = brushSize.value;
     let shape = brushType.value;
+    let erasing = false;
 
-    // Início e fim do desenho
+    // Funções de desenho
     function startDraw(e) {
       painting = true;
       draw(e);
     }
+
     function stopDraw() {
       painting = false;
       ctx.beginPath();
     }
 
-    // Desenhar
     function draw(e) {
       if (!painting) return;
-
       const rect = canvas.getBoundingClientRect();
       const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
       const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
       ctx.lineWidth = size;
       ctx.lineCap = shape;
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = erasing ? 'white' : color;
 
       ctx.lineTo(x, y);
       ctx.stroke();
@@ -192,19 +235,74 @@
     canvas.addEventListener('touchend', stopDraw);
     canvas.addEventListener('touchmove', draw);
 
-    colorPicker.addEventListener('input', e => color = e.target.value);
+    colorPicker.addEventListener('input', e => {
+      color = e.target.value;
+      erasing = false;
+      saveColor(e.target.value);
+    });
     brushSize.addEventListener('input', e => size = e.target.value);
     brushType.addEventListener('change', e => shape = e.target.value);
 
-    clearBtn.addEventListener('click', () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
+    clearBtn.addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+    eraserBtn.addEventListener('click', () => erasing = !erasing);
 
+    // Salvar desenho
     saveBtn.addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = 'meu_desenho.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
+    });
+
+    // Compartilhar
+    shareBtn.addEventListener('click', async () => {
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], 'desenho.png', { type: 'image/png' });
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Meu desenho 🎨',
+          text: 'Olha o desenho que fiz!',
+          files: [file],
+        });
+      } else {
+        alert('Compartilhamento não suportado neste dispositivo 😢');
+      }
+    });
+
+    // Paleta de cores salvas
+    function saveColor(col) {
+      let colors = JSON.parse(localStorage.getItem('palette') || '[]');
+      if (!colors.includes(col)) {
+        colors.push(col);
+        if (colors.length > 6) colors.shift();
+        localStorage.setItem('palette', JSON.stringify(colors));
+        renderPalette();
+      }
+    }
+
+    function renderPalette() {
+      const colors = JSON.parse(localStorage.getItem('palette') || '[]');
+      paletteContainer.innerHTML = '';
+      colors.forEach(c => {
+        const btn = document.createElement('button');
+        btn.style.background = c;
+        btn.addEventListener('click', () => {
+          color = c;
+          colorPicker.value = c;
+          erasing = false;
+        });
+        paletteContainer.appendChild(btn);
+      });
+    }
+
+    renderPalette();
+
+    // Modo escuro
+    toggleMode.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      toggleMode.textContent = document.body.classList.contains('dark')
+        ? '☀️ Modo claro'
+        : '🌙 Modo escuro';
     });
   </script>
 </body>
