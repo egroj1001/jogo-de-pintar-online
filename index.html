@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: 'Comic Sans MS', cursive;
-      background: #f0f0f0;
+      background: #f8f9fa;
       text-align: center;
       margin: 0;
       padding: 0;
@@ -17,21 +17,58 @@
     header {
       background: #ffb300;
       color: white;
-      padding: 15px;
-      font-size: 1.5em;
+      padding: 20px;
+      font-size: 2em;
+      border-bottom: 4px solid #ff8c00;
     }
 
-    canvas {
-      border: 2px solid #555;
+    #paintCanvas {
+      border: 2px solid #444;
       margin-top: 20px;
       cursor: crosshair;
       background: white;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     footer {
       margin-top: 20px;
-      font-size: 0.9em;
+      font-size: 1em;
       color: #555;
+      background-color: #333;
+      color: white;
+      padding: 10px;
+    }
+
+    .tools {
+      margin: 20px;
+    }
+
+    .tools input[type="color"],
+    .tools input[type="range"],
+    .tools button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 1.1em;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #ff5733;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1.1em;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #e94e1b;
+    }
+
+    /* Anúncio */
+    .ad-container {
+      margin-top: 30px;
     }
   </style>
 </head>
@@ -39,43 +76,62 @@
 <body>
   <header>🎨 Jogo de Pintar Online</header>
 
+  <!-- Barra de ferramentas -->
+  <div class="tools">
+    <input type="color" id="colorPicker" value="#ff5733" title="Escolha a cor">
+    <input type="range" id="brushSize" min="1" max="20" value="5" title="Tamanho do pincel">
+    <button id="clearBtn">Limpar</button>
+  </div>
+
   <!-- Canvas para pintar -->
-  <canvas id="paintCanvas" width="300" height="400"></canvas>
+  <canvas id="paintCanvas" width="500" height="400"></canvas>
+
+  <!-- Google AdSense -->
+  <div class="ad-container">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-9757007732894966"
+         data-ad-slot="7097424250"
+         data-ad-format="auto"></ins>
+  </div>
 
   <footer>
     Feito com ❤️ por você — © 2025 <br>
     <small>Dica: toque na tela ou use o mouse para pintar!</small>
   </footer>
 
-  <!-- Google AdSense -->
+  <!-- Google AdSense Script -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9757007732894966"
       crossorigin="anonymous"></script>
-
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-9757007732894966"
-       data-ad-slot="7097424250"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-
   <script>
-       (adsbygoogle = window.adsbygoogle || []).push({});
+    (adsbygoogle = window.adsbygoogle || []).push({});
   </script>
 
   <!-- Script do jogo -->
   <script>
     const canvas = document.getElementById('paintCanvas');
     const ctx = canvas.getContext('2d');
-    let painting = false;
+    const colorPicker = document.getElementById('colorPicker');
+    const brushSize = document.getElementById('brushSize');
+    const clearBtn = document.getElementById('clearBtn');
 
+    let painting = false;
+    let currentColor = colorPicker.value;
+    let currentSize = brushSize.value;
+    let paths = [];
+    let currentPath = [];
+
+    // Funções de pintura
     function startPosition(e) {
       painting = true;
+      currentPath = [];
       draw(e);
     }
 
     function endPosition() {
       painting = false;
       ctx.beginPath();
+      paths.push(currentPath);
     }
 
     function draw(e) {
@@ -85,9 +141,11 @@
       const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
       const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
 
-      ctx.lineWidth = 5;
+      currentPath.push({ x, y, color: currentColor, size: currentSize });
+
+      ctx.lineWidth = currentSize;
       ctx.lineCap = 'round';
-      ctx.strokeStyle = '#ff5733';
+      ctx.strokeStyle = currentColor;
 
       ctx.lineTo(x, y);
       ctx.stroke();
@@ -95,6 +153,22 @@
       ctx.moveTo(x, y);
     }
 
+    // Configurações de cor e tamanho do pincel
+    colorPicker.addEventListener('input', (e) => {
+      currentColor = e.target.value;
+    });
+
+    brushSize.addEventListener('input', (e) => {
+      currentSize = e.target.value;
+    });
+
+    // Limpar o canvas
+    clearBtn.addEventListener('click', () => {
+      paths = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // Eventos de desenho
     canvas.addEventListener('mousedown', startPosition);
     canvas.addEventListener('mouseup', endPosition);
     canvas.addEventListener('mousemove', draw);
