@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo de Pintar Online 🎨</title>
+
+<style>
+  body {
+    font-family: 'Comic Sans MS', cursive;
+    background: #f0f0f0;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    background: #ffb300;
+    color: white;
+    padding: 15px;
+    font-size: 1.5em;
+  }
+
+  #container {
+    margin: 10px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  canvas {
+    border: 2px solid #333;
+    background: white;
+    width: 90vw;
+    max-width: 500px;
+    height: auto;
+    touch-action: none;
+  }
+
+  #toolbar {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .color {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #333;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  button {
+    padding: 8px 12px;
+    border: none;
+    background: #0078ff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #005bcc;
+  }
+
+  #img-selector {
+    margin-top: 10px;
+  }
+
+  footer {
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #555;
+  }
+</style>
+</head>
+
+<body>
+  <header>🎨 Jogo de Pintar Online</header>
+
+  <div id="container">
+    <canvas id="pintar" width="500" height="500"></canvas>
+
+    <div id="toolbar">
+      <div class="color" style="background:red" data-color="red"></div>
+      <div class="color" style="background:orange" data-color="orange"></div>
+      <div class="color" style="background:yellow" data-color="yellow"></div>
+      <div class="color" style="background:green" data-color="green"></div>
+      <div class="color" style="background:blue" data-color="blue"></div>
+      <div class="color" style="background:purple" data-color="purple"></div>
+      <div class="color" style="background:black" data-color="black"></div>
+      <div class="color" style="background:white; border:2px solid #ccc" data-color="white"></div>
+    </div>
+
+    <div id="img-selector">
+      <button id="novaImagem">🔄 Nova Imagem</button>
+      <button id="limpar">🧽 Limpar</button>
+      <button id="salvar">💾 Salvar Desenho</button>
+    </div>
+  </div>
+
+  <footer>
+    Feito com ❤️ por você — © 2025 <br>
+    <small>Dica: toque na tela ou use o mouse para pintar!</small>
+  </footer>
+
+<script>
+  const canvas = document.getElementById('pintar');
+  const ctx = canvas.getContext('2d');
+  let corAtual = 'black';
+  let pintando = false;
+  let imagemAtual = 0;
+
+  // Lista de imagens para pintar (domínio público)
+  const imagens = [
+    'https://publicdomainvectors.org/photos/Cat-coloring-page-vector-image.png',
+    'https://publicdomainvectors.org/photos/Butterfly-coloring-page-vector-image.png',
+    'https://publicdomainvectors.org/photos/Flower-coloring-page-vector-image.png',
+    'https://publicdomainvectors.org/photos/Car-coloring-page-vector-image.png'
+  ];
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+
+  function carregarImagem() {
+    img.src = imagens[imagemAtual];
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+  }
+
+  carregarImagem();
+
+  // Selecionar cor
+  document.querySelectorAll('.color').forEach(cor => {
+    cor.addEventListener('click', e => {
+      corAtual = e.target.dataset.color;
+    });
+  });
+
+  // Funções de pintura
+  function desenhar(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = corAtual;
+    ctx.fill();
+  }
+
+  // Eventos mouse
+  canvas.addEventListener('mousedown', e => { pintando = true; desenhar(e.offsetX, e.offsetY); });
+  canvas.addEventListener('mouseup', () => pintando = false);
+  canvas.addEventListener('mousemove', e => { if (pintando) desenhar(e.offsetX, e.offsetY); });
+
+  // Eventos touch (mobile)
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    pintando = true;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    desenhar(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!pintando) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    desenhar(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => pintando = false);
+
+  // Botões
+  document.getElementById('limpar').addEventListener('click', carregarImagem);
+  document.getElementById('novaImagem').addEventListener('click', () => {
+    imagemAtual = (imagemAtual + 1) % imagens.length;
+    carregarImagem();
+  });
+
+  document.getElementById('salvar').addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'meu_desenho.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  });
+</script>
+</body>
+</html>
